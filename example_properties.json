@@ -1,0 +1,18 @@
+{
+  "groups": {
+    "synlait_milk": {
+      "group_ou": "",
+      "list_id": "",
+      "username": "",
+      "api_key": "",
+      "base_url": ""
+    }
+  },
+  "global": {
+    "base_ou": "",
+    "ad_server": "",
+    "ad_user": "",
+    "ad_password": "",
+    "python_path": ""
+  }
+}
