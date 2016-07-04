@@ -2,6 +2,13 @@ from ldap3 import Server, Connection, NTLM, Tls
 from ssl import PROTOCOL_TLSv1, CERT_REQUIRED
 import json
 
+BASE_OU = 'OU=Synlait,DC=Synlait,DC=local'
+
+AD_SERVER = 'SMLDC1.Synlait.local'
+USER = 'synlait\jmiddleton'
+PASSWORD = 'RsiRsi06'
+GROUP_OU = '(memberOf=CN=Synlait_Milk,OU=Email Groups,OU=Synlait,DC=Synlait,DC=local)'
+
 
 def get_ou_members(global_prop, list_prop):
     ad_query_string = '''(&
