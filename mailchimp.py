@@ -3,17 +3,22 @@ from requests.auth import HTTPBasicAuth
 import json
 from hashlib import md5
 import pprint
+from properties import get_all_properties
 
 HEADERS = {'Content-Type': 'application/json'}
 MEMBERS_ENDPOINT = 'lists/{list_id}/members'
+RETURN_FIELDS = 'members.email_address,members.merge_fields'
+PARAMS = {'fields': RETURN_FIELDS,
+          'count': 5000
+}
 
 
-def get_mailchimp_list_emails(properties):
+def get_mailchimp_list_users(properties):
     auth = HTTPBasicAuth(properties['username'], properties['api_key'])
     url = properties['base_url'] + MEMBERS_ENDPOINT.format(list_id=properties['list_id'])
-    resp = requests.get(url, auth=auth, headers=HEADERS)
+    resp = requests.get(url, auth=auth, headers=HEADERS, params=PARAMS)
 
-    return get_email(resp.json())
+    return get_users(resp.json())
 
 
 def update_mailchimp_list(properties, members, opertation):
@@ -36,24 +41,31 @@ def update_mailchimp_list(properties, members, opertation):
     return results
 
 
-def get_email(get_response):
+def get_users(get_response):
     members = get_response['members']
-    emails = []
+    users = []
     for i in members:
-        emails.append(i['email_address'])
+        user = {
+            'email': i['email_address'],
+            'first_name': i['merge_fields']['FNAME'],
+            'last_name': i['merge_fields']['LNAME']
+        }
+        users.append(user)
 
-    return emails
+    return users
 
 
 def main():
-    results = update_mailchimp_list(URL_BASE + MEMBERS_ENDPOINT,
-                                    ['jesse.middleton@synlait.com',
-                                        'george.mcewan@synlait.com',
-                                        'buckleigh.johns@synlait.com'],
-                                       'DELETE')
+    # results = update_mailchimp_list(URL_BASE + MEMBERS_ENDPOINT,
+    #                                 ['jesse.middleton@synlait.com',
+    #                                     'george.mcewan@synlait.com',
+    #                                     'buckleigh.johns@synlait.com'],
+    #                                    'DELETE')
+    results = get_mailchimp_list_users(get_all_properties('properties.json')['groups']['synlait_milk'])
+    re = [i['email'] for i in results]
 
     pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(results)
+    pp.pprint(re)
 
 
 if __name__ == '__main__':

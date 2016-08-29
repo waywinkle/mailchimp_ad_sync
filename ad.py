@@ -1,13 +1,9 @@
 from ldap3 import Server, Connection, NTLM, Tls
 from ssl import PROTOCOL_TLSv1, CERT_REQUIRED
 import json
+from properties import get_all_properties
 
-BASE_OU = 'OU=Synlait,DC=Synlait,DC=local'
-
-AD_SERVER = 'SMLDC1.Synlait.local'
-USER = 'synlait\jmiddleton'
-PASSWORD = 'RsiRsi06'
-GROUP_OU = '(memberOf=CN=Synlait_Milk,OU=Email Groups,OU=Synlait,DC=Synlait,DC=local)'
+PROPERTIES = get_all_properties('properties.json')
 
 
 def get_ou_members(global_prop, list_prop):
@@ -24,25 +20,41 @@ def get_ou_members(global_prop, list_prop):
                       password=global_prop['ad_password'],
                       authentication=NTLM,
                       auto_bind=True)
-    conn.search(global_prop['base_ou'], ad_query_string, attributes=['mail'])
-    ad_emails = get_emails(conn.entries)
+    conn.search(global_prop['base_ou'], ad_query_string, attributes=['mail', 'givenname', 'sn'])
+    ad_users = get_users(conn.entries)
 
-    return ad_emails
+    return ad_users
 
 
-def get_emails(entries):
+def get_users(entries):
     json_entries = []
+    log = []
     for entry in entries:
         convert = json.loads(entry.entry_to_json())
         mail = convert['attributes'].get('mail', None)
-        if mail:
-            json_entries.append(mail[0])
+        first_name = convert['attributes'].get('givenName', None)
+        last_name = convert['attributes'].get('sn', None)
+
+        if mail and first_name and last_name:
+            json_entries.append({'email': mail[0],
+                                 'first_name': first_name[0],
+                                 'last_name': last_name[0]
+                                 }
+                                )
+        elif mail:
+            log.append(mail[0])
+        elif first_name and last_name:
+            log.append(first_name[0] + ' ' + last_name[0])
+        elif first_name:
+            log.append(first_name[0])
+        else:
+            log.append(entry)
 
     return json_entries
 
 
 if __name__ == '__main__':
-    result = get_ou_members()
+    result = get_ou_members(PROPERTIES['global'], PROPERTIES['groups']['synlait_milk'])
 
     for i in result:
         print(i)
