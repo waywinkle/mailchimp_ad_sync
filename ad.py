@@ -27,7 +27,7 @@ def get_ou_members(global_prop, list_prop):
 
 
 def get_users(entries):
-    json_entries = []
+    json_entries = {}
     log = []
     for entry in entries:
         convert = json.loads(entry.entry_to_json())
@@ -36,11 +36,12 @@ def get_users(entries):
         last_name = convert['attributes'].get('sn', None)
 
         if mail and first_name and last_name:
-            json_entries.append({'email': mail[0],
-                                 'first_name': first_name[0],
-                                 'last_name': last_name[0]
-                                 }
-                                )
+            json_entries.update({
+                mail[0]: {
+                    'first_name': first_name[0],
+                    'last_name': last_name[0]
+                }
+            })
         elif mail:
             log.append(mail[0])
         elif first_name and last_name:
