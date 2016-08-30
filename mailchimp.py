@@ -31,26 +31,32 @@ def update_mailchimp_list(properties, members, opertation):
             body = json.dumps({'status': 'subscribed', 'email_address': member})
             resp = requests.post(url, auth=auth, headers=HEADERS, data=body)
         elif opertation == 'DELETE':
-            member_hash = md5()
-            member_hash.update(member.encode())
-            member_url = url + '/' + str(member_hash.hexdigest())
+            member_url = get_member_url(member, url)
             resp = requests.delete(member_url, auth=auth, headers=HEADERS)
+        elif opertation == 'UPDATE':
+            member_url = get_member_url(member, url)
+            resp = requests.patch(member_url, auth=auth, headers=HEADERS, data=body)
 
         results.append(resp.status_code if resp else None)
 
     return results
 
 
+def get_member_url(member, url):
+    member_hash = md5()
+    member_hash.update(member.encode())
+    return url + '/' + str(member_hash.hexdigest())
+
 def get_users(get_response):
     members = get_response['members']
-    users = []
+    users = {}
     for i in members:
         user = {
-            'email': i['email_address'],
-            'first_name': i['merge_fields']['FNAME'],
-            'last_name': i['merge_fields']['LNAME']
+            i['email_address']:{
+                'first_name': i['merge_fields']['FNAME'],
+                'last_name': i['merge_fields']['LNAME']}
         }
-        users.append(user)
+        users.update(user)
 
     return users
 
@@ -62,7 +68,7 @@ def main():
     #                                     'buckleigh.johns@synlait.com'],
     #                                    'DELETE')
     results = get_mailchimp_list_users(get_all_properties('properties.json')['groups']['synlait_milk'])
-    re = [i['email'] for i in results]
+    re = [i for i in results]
 
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(re)
