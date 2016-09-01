@@ -1,1 +1,4 @@
 properties.json
+.idea/vcs.xml
+__pycache__/
+log/

@@ -57,6 +57,6 @@ def get_users(entries):
 if __name__ == '__main__':
     result = get_ou_members(PROPERTIES['global'], PROPERTIES['groups']['synlait_milk'])
 
-    for i in result:
-        print(i)
+    for i, j in result.items():
+        print(i, j)
 
